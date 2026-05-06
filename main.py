@@ -9,7 +9,7 @@ import sys
 import traceback
 
 import yaml
-from anthropic import Anthropic
+from google import genai
 
 from modules import central_banks, gold, stocks, zsxq
 
@@ -29,9 +29,12 @@ def main() -> None:
     if not cookie:
         print("WARN: ZSXQ_COOKIE not set — 知识星球 section will be skipped.")
 
-    # Picks up ANTHROPIC_API_KEY from env automatically.
-    claude = Anthropic()
-    model = config.get("claude_model", "claude-sonnet-4-6")
+    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    if not api_key:
+        print("ERROR: GEMINI_API_KEY (or GOOGLE_API_KEY) not set", file=sys.stderr)
+        sys.exit(1)
+    gemini = genai.Client(api_key=api_key)
+    model = config.get("model", "gemini-2.5-flash")
 
     # HK timezone for the file name (cron runs at 23:00 UTC = 07:00 HK next day).
     hk_now = dt.datetime.now(dt.timezone(dt.timedelta(hours=8)))
@@ -49,7 +52,7 @@ def main() -> None:
             "央行动态",
             lambda: central_banks.format_central_banks(
                 central_banks.get_central_bank_summary(
-                    claude, config["central_bank_prompt"], model=model
+                    gemini, config["central_bank_prompt"], model=model
                 )
             ),
         )
@@ -100,7 +103,7 @@ def main() -> None:
                             cookie,
                             lookback_hours=config.get("zsxq_lookback_hours", 24),
                         ),
-                        claude,
+                        gemini,
                         config["prompts"][p["prompt_style"]],
                         model=model,
                     ),

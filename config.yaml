@@ -8,9 +8,9 @@ zsxq_lookback_hours: 24
 # Stock-mover threshold (absolute % change vs prior close).
 stock_threshold_pct: 2.0
 
-# Claude model used for summaries and central-bank web search.
-# Cheaper alternative for summaries: claude-haiku-4-5
-claude_model: "claude-sonnet-4-6"
+# Gemini model used for summaries and central-bank Google Search grounding.
+# Alternative: gemini-2.5-pro (higher quality, more expensive)
+model: "gemini-2.5-flash"
 
 # -----------------------------------------------------------------------------
 # 知识星球
@@ -20,10 +20,10 @@ claude_model: "claude-sonnet-4-6"
 # Or from devtools Network → topics?... → groups/{GROUP_ID}/topics
 planets:
   - name: "跨市场资产策略笔记"
-    group_id: "REPLACE_ME"
+    group_id: "51112284418814"
     prompt_style: "financial"
   - name: "C&X Research"
-    group_id: "REPLACE_ME"
+    group_id: "88888558554112"
     prompt_style: "financial"
   - name: "全球特讯 | 兔主席的宝藏"
     group_id: "REPLACE_ME"
@@ -132,7 +132,7 @@ prompts:
     内容：
     {content}
 
-# Central bank prompt (uses Claude web search)
+# Central bank prompt (uses Gemini + Google Search grounding)
 central_bank_prompt: |
   请搜索过去24小时（截至今天）全球主要央行的动态和官员表态，重点关注：
   - 美联储 Fed: FOMC 成员讲话、点阵图、会议纪要、利率预期

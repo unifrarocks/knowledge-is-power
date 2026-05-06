@@ -1,29 +1,20 @@
-"""Central bank news summary via Claude's built-in web_search tool."""
+"""Central bank news summary via Gemini's Google Search grounding."""
+from google.genai import types
 
 
 def get_central_bank_summary(
-    claude_client, prompt: str, model: str = "claude-sonnet-4-6"
+    gemini_client, prompt: str, model: str = "gemini-2.5-flash"
 ) -> str:
-    """Call Claude with web_search and return the synthesized text."""
-    msg = claude_client.messages.create(
+    """Call Gemini with Google Search grounding and return the synthesized text."""
+    response = gemini_client.models.generate_content(
         model=model,
-        max_tokens=4096,
-        tools=[
-            {
-                "type": "web_search_20250305",
-                "name": "web_search",
-                "max_uses": 8,
-            }
-        ],
-        messages=[{"role": "user", "content": prompt}],
+        contents=prompt,
+        config=types.GenerateContentConfig(
+            tools=[types.Tool(google_search=types.GoogleSearch())],
+            max_output_tokens=4096,
+        ),
     )
-
-    # The response is a mix of server_tool_use, web_search_tool_result, and
-    # text blocks. We only want the final text Claude wrote.
-    text_parts = [
-        b.text for b in msg.content if getattr(b, "type", "") == "text"
-    ]
-    return "\n\n".join(p for p in text_parts if p.strip())
+    return (response.text or "").strip()
 
 
 def format_central_banks(text: str) -> str:

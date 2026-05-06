@@ -4,6 +4,7 @@ import time
 from typing import Any
 
 import requests
+from google.genai import types
 
 ZSXQ_API = "https://api.zsxq.com/v1.10/groups/{group_id}/topics"
 WEB_URL = "https://wx.zsxq.com/group/{group_id}/topic/{topic_id}"
@@ -115,9 +116,9 @@ def fetch_topics(
 def summarize_planet(
     planet_name: str,
     topics: list[dict],
-    claude_client,
+    gemini_client,
     prompt_template: str,
-    model: str = "claude-sonnet-4-6",
+    model: str = "gemini-2.5-flash",
 ) -> str:
     """Return a Markdown section for one planet."""
     if not topics:
@@ -142,12 +143,12 @@ def summarize_planet(
 
     prompt = prompt_template.format(planet=planet_name, content=content)
 
-    msg = claude_client.messages.create(
+    response = gemini_client.models.generate_content(
         model=model,
-        max_tokens=4096,
-        messages=[{"role": "user", "content": prompt}],
+        contents=prompt,
+        config=types.GenerateContentConfig(max_output_tokens=4096),
     )
-    text = "".join(b.text for b in msg.content if getattr(b, "type", "") == "text")
+    text = (response.text or "").strip()
 
     # Make sure the planet name appears as a level-3 heading at the top.
-    return f"### {planet_name}\n\n{text.strip()}\n"
+    return f"### {planet_name}\n\n{text}\n"

@@ -3,7 +3,7 @@
 每日早上 7 点（HK）自动生成一份简报，提交到 `daily/YYYY-MM-DD.md`。
 
 简报包括：
-1. **央行动态** — Fed / ECB / PBoC / BoJ 过去 24 小时表态（Claude 联网搜索）
+1. **央行动态** — Fed / ECB / PBoC / BoJ 过去 24 小时表态（Gemini + Google Search grounding）
 2. **AI 产业链异动** — 涨跌幅 >2% 的标的（yfinance）
 3. **贵金属 / 美元 / 利率** — 黄金、白银、DXY、美 10Y
 4. **知识星球摘要** — 4 个星球过去 24 小时内容，按主题分类总结
@@ -48,7 +48,7 @@ gh repo create zsxq-daily --private --source=. --push
 | Name | Value |
 |---|---|
 | `ZSXQ_COOKIE` | 第 1 步复制的整段 Cookie |
-| `ANTHROPIC_API_KEY` | 你的 Claude API key |
+| `GEMINI_API_KEY` | 你的 Gemini API key（[aistudio.google.com/apikey](https://aistudio.google.com/apikey)）|
 
 ### 5. 测试运行
 
@@ -75,7 +75,7 @@ gh repo create zsxq-daily --private --source=. --push
 ```bash
 pip install -r requirements.txt
 export ZSXQ_COOKIE="zsxq_access_token=...; ..."
-export ANTHROPIC_API_KEY="sk-ant-..."
+export GEMINI_API_KEY="AIza..."
 python main.py
 cat daily/$(date +%Y-%m-%d).md
 ```
@@ -91,7 +91,7 @@ cat daily/$(date +%Y-%m-%d).md
 | 加/删 ticker | `config.yaml` → `ai_tickers` |
 | 调每个星球的 prompt | `config.yaml` → `prompts` |
 | 改 lookback 窗口 | `config.yaml` → `zsxq_lookback_hours` |
-| 换便宜的模型 | `config.yaml` → `claude_model: "claude-haiku-4-5"` |
+| 换更高质量模型 | `config.yaml` → `model: "gemini-2.5-pro"` |
 
 ---
 
