@@ -1,0 +1,155 @@
+# =============================================================================
+# Daily brief config. Edit group_ids and tickers; everything else is optional.
+# =============================================================================
+
+# How recent a 知识星球 post must be to appear in the summary, in hours.
+zsxq_lookback_hours: 24
+
+# Stock-mover threshold (absolute % change vs prior close).
+stock_threshold_pct: 2.0
+
+# Claude model used for summaries and central-bank web search.
+# Cheaper alternative for summaries: claude-haiku-4-5
+claude_model: "claude-sonnet-4-6"
+
+# -----------------------------------------------------------------------------
+# 知识星球
+# -----------------------------------------------------------------------------
+# Get group_id from the URL when you click into a planet on wx.zsxq.com:
+#   https://wx.zsxq.com/group/{GROUP_ID}    <-- this number
+# Or from devtools Network → topics?... → groups/{GROUP_ID}/topics
+planets:
+  - name: "跨市场资产策略笔记"
+    group_id: "REPLACE_ME"
+    prompt_style: "financial"
+  - name: "C&X Research"
+    group_id: "REPLACE_ME"
+    prompt_style: "financial"
+  - name: "全球特讯 | 兔主席的宝藏"
+    group_id: "REPLACE_ME"
+    prompt_style: "geopolitical"
+  - name: "报告研究所"
+    group_id: "REPLACE_ME"
+    prompt_style: "research"
+
+# -----------------------------------------------------------------------------
+# AI supply-chain tickers (yfinance symbols)
+# US: just symbol (NVDA). HK: 0700.HK. Taiwan: 2330.TW. Korea: 005930.KS.
+# Japan: 6857.T. China A: 688981.SS / 002371.SZ.
+# -----------------------------------------------------------------------------
+ai_tickers:
+  AI芯片:
+    - NVDA      # Nvidia
+    - AMD
+    - AVGO      # Broadcom
+    - MRVL      # Marvell
+    - ARM
+    - QCOM
+    - INTC
+  HBM存储:
+    - MU                # Micron
+    - "005930.KS"       # Samsung
+    - "000660.KS"       # SK Hynix
+  代工封测:
+    - TSM               # TSMC ADR
+    - "2330.TW"         # TSMC TW
+    - ASX               # ASE
+    - AMKR
+  服务器电源:
+    - SMCI
+    - DELL
+    - HPE
+    - VRT               # Vertiv
+    - ANET              # Arista
+    - CRDO              # Credo
+  AI云超算:
+    - MSFT
+    - GOOGL
+    - AMZN
+    - META
+    - ORCL
+    - NBIS              # Nebius
+    - CRWV              # CoreWeave
+  AI应用:
+    - PLTR
+    - NOW
+    - CRM
+  光通信:
+    - COHR
+    - LITE
+    - "300308.SZ"       # 中际旭创
+    - "002463.SZ"       # 沪电股份
+  中国AI:
+    - BABA
+    - "9988.HK"         # Alibaba HK
+    - BIDU
+    - "0981.HK"         # SMIC HK
+
+# -----------------------------------------------------------------------------
+# Gold / metals / DXY
+# -----------------------------------------------------------------------------
+gold_tickers:
+  - { ticker: "GC=F",     name: "黄金期货" }
+  - { ticker: "GLD",      name: "SPDR黄金ETF" }
+  - { ticker: "SI=F",     name: "白银期货" }
+  - { ticker: "DX-Y.NYB", name: "美元指数 DXY" }
+  - { ticker: "^TNX",     name: "美10Y国债收益率" }
+
+# -----------------------------------------------------------------------------
+# Per-style prompts. {planet} and {content} get substituted.
+# -----------------------------------------------------------------------------
+prompts:
+  financial: |
+    以下是知识星球「{planet}」过去24小时发布的内容。请按主题聚类，每个主题输出：
+    - 三级标题（### 主题名）
+    - 200字内的核心观点摘要，保留具体数据、价格水平、机构观点、关键人名
+    - 引用的原帖链接（Markdown link）
+    按"对资产配置决策的相关性"由高到低排序。如果某条内容是闲聊或无信息含量，跳过。
+    
+    内容：
+    {content}
+
+  geopolitical: |
+    以下是知识星球「{planet}」过去24小时发布的内容（兔主席的地缘/社会观察）。请提取每篇的：
+    - 三级标题（### 主题名）
+    - 核心论点（不超过150字）
+    - 关键证据或案例（要有具体性，保留人名地名数字）
+    - 原帖链接
+    按论点的"信息密度和洞察价值"排序。
+    
+    内容：
+    {content}
+
+  research: |
+    以下是知识星球「{planet}」过去24小时分享的研报内容。请为每份报告输出：
+    - 三级标题（### 报告标题）
+    - 发布机构
+    - 核心观点（不超过150字）
+    - 3-5个关键数据点
+    - 投资含义
+    - 原帖链接
+    
+    内容：
+    {content}
+
+# Central bank prompt (uses Claude web search)
+central_bank_prompt: |
+  请搜索过去24小时（截至今天）全球主要央行的动态和官员表态，重点关注：
+  - 美联储 Fed: FOMC 成员讲话、点阵图、会议纪要、利率预期
+  - 欧央行 ECB: 拉加德等讲话、利率决议、QT 进度
+  - 中国人民银行 PBoC: MLF/LPR、官员表态、流动性操作、汇率
+  - 日本央行 BoJ: YCC、利率政策、干预
+  - 英澳加央行 BoE/RBA/BoC: 重大表态
+  
+  输出格式（中文）：
+  ## 美联储
+  - **[时间] 发言人/事件**: 核心表态。市场含义（鹰派/鸽派/中性）
+  
+  ## 欧央行
+  ...
+  
+  规则：
+  - 只列过去24小时内的真实事件，没有就写"无重大动态"
+  - 每条不超过100字
+  - 保留原始数据和具体表述
+  - 末尾用Markdown link附信源
