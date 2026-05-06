@@ -1,18 +1,26 @@
 """Fetch and summarize 知识星球 topics from the past N hours."""
 import datetime as dt
 import time
+import uuid
 from typing import Any
 
 import requests
 from google.genai import types
 
-ZSXQ_API = "https://api.zsxq.com/v1.10/groups/{group_id}/topics"
+# Matches the path used by the current zsxq web client (wx.zsxq.com).
+ZSXQ_API = "https://api.zsxq.com/v2/groups/{group_id}/topics"
 WEB_URL = "https://wx.zsxq.com/group/{group_id}/topic/{topic_id}"
+
+# These mirror the zsxq web client's request signature. zsxq's API does a
+# version check and returns code:2 ("版本太旧") if X-Version is missing.
+# Update X-Version periodically if zsxq starts rejecting requests again —
+# read the current value from a real browser request in DevTools → Network.
 USER_AGENT = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
     "AppleWebKit/537.36 (KHTML, like Gecko) "
-    "Chrome/124.0.0.0 Safari/537.36"
+    "Chrome/147.0.0.0 Safari/537.36"
 )
+ZSXQ_VERSION = "2.91.0"
 
 
 def _parse_zsxq_time(s: str) -> dt.datetime:
@@ -65,8 +73,15 @@ def fetch_topics(
         "Cookie": cookie,
         "User-Agent": USER_AGENT,
         "Accept": "application/json, text/plain, */*",
+        "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
         "Origin": "https://wx.zsxq.com",
         "Referer": "https://wx.zsxq.com/",
+        "Sec-Fetch-Dest": "empty",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Site": "same-site",
+        "X-Version": ZSXQ_VERSION,
+        "X-Request-Id": uuid.uuid4().hex,
+        "X-Timestamp": str(int(time.time())),
     }
     params = {"scope": "all", "count": count}
     url = ZSXQ_API.format(group_id=group_id)
